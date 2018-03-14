@@ -1,0 +1,39 @@
+{
+    "name": "marczhermo/algolia-search",
+    "description": "Algolis SilverStripe Module For Search",
+    "type": "silverstripe-vendormodule",
+    "license": "BSD-3-Clause",
+    "keywords": [
+        "algolia",
+        "silverstripe",
+        "search",
+        "admin"
+    ],
+    "require": {
+        "silverstripe/admin": "^1@dev",
+        "silverstripe/framework": "^4@dev",
+        "silverstripe/versioned": "^1@dev",
+        "silverstripe/vendor-plugin": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.7",
+        "silverstripe/cms": "^4@dev"
+    },
+    "extra": {
+        "expose": [
+            "client/dist",
+            "client/lang"
+        ]
+    },
+    "autoload": {
+        "psr-4": {
+            "Marcz\\Algolia\\": "code/",
+            "Marcz\\Algolia\\Tests\\": "tests/php/"
+        }
+    },
+    "scripts": {
+        "lint": "phpcs src/ tests/php/ tests/behat/src/"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

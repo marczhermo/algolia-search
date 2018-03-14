@@ -1,0 +1,12 @@
+// See includePaths in webpack.config.js
+@import "variables";
+
+// Thirdparty
+@import "~bootstrap/scss/mixins";
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+
+// Layout and sections
+.algolia-search {
+  opacity: 0.5;
+}

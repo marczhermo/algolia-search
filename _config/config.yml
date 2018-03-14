@@ -1,0 +1,6 @@
+---
+Name: algoliasearch
+---
+SilverStripe\Admin\LeftAndMain:
+  extensions:
+    - Marcz\Algolia\AlgoliaAdminExtension
