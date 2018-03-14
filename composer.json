@@ -13,7 +13,8 @@
         "silverstripe/admin": "^1@dev",
         "silverstripe/framework": "^4@dev",
         "silverstripe/versioned": "^1@dev",
-        "silverstripe/vendor-plugin": "^1.0"
+        "silverstripe/vendor-plugin": "^1.0",
+        "marczhermo/search-list": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "^5.7",
