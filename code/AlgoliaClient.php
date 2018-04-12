@@ -11,6 +11,7 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
 use Marcz\Algolia\Jobs\JsonBulkExport;
 use Marcz\Algolia\Jobs\JsonExport;
 use SilverStripe\ORM\DataList;
+use SilverStripe\ORM\ArrayList;
 use Marcz\Search\Config;
 use Marcz\Search\Client\SearchClientAdaptor;
 use Marcz\Algolia\Jobs\DeleteRecord;
@@ -47,10 +48,8 @@ class AlgoliaClient implements SearchClientAdaptor
 
     public function createIndex($indexName)
     {
-        $index = $this->initIndex($indexName);
-
-        // Set the default ranking
-        $index->setSettings([
+        $index    = $this->initIndex($indexName);
+        $settings = [
             'ranking' => [
                 'typo',
                 'geo',
@@ -61,7 +60,29 @@ class AlgoliaClient implements SearchClientAdaptor
                 'exact',
                 'custom'
             ]
-        ]);
+        ];
+
+        $indexConfig = ArrayList::create(Config::config()->get('indices'))
+                            ->filter(['name' => $indexName])->first();
+
+        if (!empty($indexConfig['ranking'])) {
+            $settings['ranking'] = $indexConfig['ranking'];
+        }
+
+        if (!empty($indexConfig['searchableAttributes'])) {
+            $settings['searchableAttributes'] = $indexConfig['searchableAttributes'];
+        }
+
+        if (!empty($indexConfig['attributesForFaceting'])) {
+            $settings['attributesForFaceting'] = $indexConfig['attributesForFaceting'];
+        }
+
+        if (!empty($indexConfig['customRanking'])) {
+            $settings['customRanking'] = $indexConfig['customRanking'];
+        }
+
+        // Set the default ranking
+        $index->setSettings($settings);
 
         return $index;
     }
@@ -123,7 +144,7 @@ class AlgoliaClient implements SearchClientAdaptor
     public function search($term = '')
     {
         $query = [
-            'facetFilters' => ['Brand:Apple'],
+            // 'facetFilters' => ['Brand:Apple'],
         ];
 
         return $this->clientIndex->search($term, $query);
