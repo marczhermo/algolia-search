@@ -50,7 +50,9 @@ class AlgoliaClient implements SearchClientAdaptor
     {
         $index    = $this->initIndex($indexName);
         $settings = [
-            'ranking' => [
+            //Phrase query, surrounded by quotes eg. "search engine"
+            'advancedSyntax' => true,
+            'ranking'        => [
                 'typo',
                 'geo',
                 'words',
@@ -144,7 +146,7 @@ class AlgoliaClient implements SearchClientAdaptor
     public function search($term = '', $filters = [], $pageNumber = 0, $pageLength = 20)
     {
         $query = [
-            'page' => $pageNumber,
+            'page'        => $pageNumber,
             'hitsPerPage' => $pageLength,
         ];
 
