@@ -141,11 +141,28 @@ class AlgoliaClient implements SearchClientAdaptor
         singleton(QueuedJobService::class)->queueJob($job);
     }
 
-    public function search($term = '')
+    public function search($term = '', $filters = [], $pageNumber = 0, $pageLength = 20)
     {
         $query = [
-            // 'facetFilters' => ['Brand:Apple'],
+            'page' => $pageNumber,
+            'hitsPerPage' => $pageLength,
         ];
+
+        if (!empty($filters)) {
+            $query['facetFilters'] = [];
+            foreach ($filters as $key => $value) {
+                if (is_array($value)) {
+                    $query['facetFilters'][] = array_map(
+                        function ($item) use ($key) {
+                            return "{$key}:{$item}";
+                        },
+                        $value
+                    );
+                } else {
+                    $query['facetFilters'][] = ["{$key}:{$value}"];
+                }
+            }
+        }
 
         return $this->clientIndex->search($term, $query);
     }
