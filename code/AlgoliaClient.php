@@ -166,6 +166,11 @@ class AlgoliaClient implements SearchClientAdaptor
             }
         }
 
-        return $this->clientIndex->search($term, $query);
+        return $this->callIndexMethod('search', [$term, $query]);
+    }
+
+    public function callIndexMethod($methodName, $parameters = [])
+    {
+        return call_user_func_array([$this->clientIndex, $methodName], $parameters);
     }
 }
