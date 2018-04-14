@@ -146,31 +146,100 @@ class AlgoliaClient implements SearchClientAdaptor
     public function search($term = '', $filters = [], $pageNumber = 0, $pageLength = 20)
     {
         $query = [
-            'page'        => $pageNumber,
-            'hitsPerPage' => $pageLength,
+            'page'       => $pageNumber,
+            'hitsPerPage'=> $pageLength,
+            // In order to retrieve facets and their respective counts as part of the JSON response
+            'facets'     => ['*'],
         ];
 
-        if (!empty($filters)) {
-            $query['facetFilters'] = [];
-            foreach ($filters as $key => $value) {
-                if (is_array($value)) {
-                    $query['facetFilters'][] = array_map(
-                        function ($item) use ($key) {
-                            return "{$key}:{$item}";
-                        },
-                        $value
-                    );
+        $query = array_merge($query, $this->translateFilterModifiers($filters));
+
+        return $this->callIndexMethod('search', [$term, $query]);
+    }
+
+    /**
+     * Modifies filters
+     * @todo Refactor when unit tests is in place.
+     * @param array $filters
+     * @return array
+     */
+    public function translateFilterModifiers($filters = [])
+    {
+        $query       = [];
+        $forFilters  = [];
+        $forFacets   = [];
+
+        foreach ($filters as $filterArray) {
+            foreach ($filterArray as $key => $value) {
+                $hasModifier = strpos($key, ':') !== false;
+                if ($hasModifier) {
+                    $forFilters[][$key] = $value;
                 } else {
-                    $query['facetFilters'][] = ["{$key}:{$value}"];
+                    $forFacets[][$key] = $value;
                 }
             }
         }
 
-        return $this->callIndexMethod('search', [$term, $query]);
+        if ($forFilters) {
+            $query['filters'] = [];
+            $modifiedFilter   = [];
+
+            foreach ($forFilters as $filterArray) {
+                foreach ($filterArray as $key => $value) {
+                    $fieldArgs = explode(':', $key);
+                    $fieldName = array_shift($fieldArgs);
+                    $modifier  = array_shift($fieldArgs);
+                    if (is_array($value)) {
+                        $modifiedFilter[] = $this->modifyOrFilter($modifier, $fieldName, $value);
+                    } else {
+                        $modifiedFilter[] = $this->modifyFilter($modifier, $fieldName, $value);
+                    }
+                }
+            }
+
+            $query['filters'] = implode(' AND ', $modifiedFilter);
+        }
+
+        if ($forFacets) {
+            $query['facetFilters'] = [];
+
+            foreach ($forFacets as $filterArray) {
+                foreach ($filterArray as $key => $value) {
+                    if (is_array($value)) {
+                        $query['facetFilters'][] = array_map(
+                            function ($item) use ($key) {
+                                return "{$key}:{$item}";
+                            },
+                            $value
+                        );
+                    } else {
+                        $query['facetFilters'][] = ["{$key}:{$value}"];
+                    }
+                }
+            }
+        }
+
+        return $query;
     }
 
     public function callIndexMethod($methodName, $parameters = [])
     {
         return call_user_func_array([$this->clientIndex, $methodName], $parameters);
+    }
+
+    public function modifyFilter($modifier, $key, $value)
+    {
+        return Injector::inst()->create('Marcz\\Algolia\\Modifiers\\' . $modifier)->apply($key, $value);
+    }
+
+    public function modifyOrFilter($modifier, $key, $values)
+    {
+        $modifiedFilter = [];
+
+        foreach ($values as $value) {
+            $modifiedFilter[] = $this->modifyFilter($modifier, $key, $value);
+        }
+
+        return '(' . implode(' OR ', $modifiedFilter) . ')';
     }
 }
