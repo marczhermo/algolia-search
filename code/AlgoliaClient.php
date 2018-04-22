@@ -15,8 +15,10 @@ use SilverStripe\ORM\ArrayList;
 use Marcz\Search\Config;
 use Marcz\Search\Client\SearchClientAdaptor;
 use Marcz\Algolia\Jobs\DeleteRecord;
+use Marcz\Search\Client\DataWriter;
+use Marcz\Search\Client\DataSearcher;
 
-class AlgoliaClient implements SearchClientAdaptor
+class AlgoliaClient implements SearchClientAdaptor, DataWriter, DataSearcher
 {
     use Injectable, Configurable;
 
@@ -225,6 +227,11 @@ class AlgoliaClient implements SearchClientAdaptor
     public function callIndexMethod($methodName, $parameters = [])
     {
         return call_user_func_array([$this->clientIndex, $methodName], $parameters);
+    }
+
+    public function callClientMethod($methodName, $parameters = [])
+    {
+        return call_user_func_array([$this->clientAPI, $methodName], $parameters);
     }
 
     public function modifyFilter($modifier, $key, $value)
