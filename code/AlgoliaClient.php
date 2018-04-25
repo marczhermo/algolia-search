@@ -24,6 +24,7 @@ class AlgoliaClient implements SearchClientAdaptor, DataWriter, DataSearcher
 
     protected $clientIndex;
     protected $clientAPI;
+    protected $response;
 
     private static $batch_length = 100;
 
@@ -156,7 +157,14 @@ class AlgoliaClient implements SearchClientAdaptor, DataWriter, DataSearcher
 
         $query = array_merge($query, $this->translateFilterModifiers($filters));
 
-        return $this->callIndexMethod('search', [$term, $query]);
+        $this->response = $this->callIndexMethod('search', [$term, $query]);
+
+        return new ArrayList($this->response['hits']);
+    }
+
+    public function getResponse()
+    {
+        return $this->response;
     }
 
     /**
