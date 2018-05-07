@@ -158,6 +158,7 @@ class AlgoliaClient implements SearchClientAdaptor, DataWriter, DataSearcher
         $query = array_merge($query, $this->translateFilterModifiers($filters));
 
         $this->response = $this->callIndexMethod('search', [$term, $query]);
+        $this->response['_total'] = $this->response['nbHits'];
 
         return new ArrayList($this->response['hits']);
     }
