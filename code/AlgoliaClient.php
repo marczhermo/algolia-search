@@ -25,6 +25,7 @@ class AlgoliaClient implements SearchClientAdaptor, DataWriter, DataSearcher
     protected $clientIndex;
     protected $clientAPI;
     protected $response;
+    protected $rawQuery;
 
     private static $batch_length = 100;
 
@@ -148,16 +149,15 @@ class AlgoliaClient implements SearchClientAdaptor, DataWriter, DataSearcher
 
     public function search($term = '', $filters = [], $pageNumber = 0, $pageLength = 20)
     {
-        $query = [
+        $this->rawQuery = [
             'page'       => $pageNumber,
             'hitsPerPage'=> $pageLength,
             // In order to retrieve facets and their respective counts as part of the JSON response
             'facets'     => ['*'],
         ];
 
-        $query = array_merge($query, $this->translateFilterModifiers($filters));
-
-        $this->response = $this->callIndexMethod('search', [$term, $query]);
+        $this->rawQuery = array_merge($this->rawQuery, $this->translateFilterModifiers($filters));
+        $this->response = $this->callIndexMethod('search', [$term, $this->rawQuery]);
         $this->response['_total'] = $this->response['nbHits'];
 
         return new ArrayList($this->response['hits']);
@@ -260,5 +260,10 @@ class AlgoliaClient implements SearchClientAdaptor, DataWriter, DataSearcher
         }
 
         return '(' . implode(' OR ', $modifiedFilter) . ')';
+    }
+
+    public function sql()
+    {
+        return $this->rawQuery;
     }
 }
