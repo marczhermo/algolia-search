@@ -182,7 +182,7 @@ class AlgoliaClient implements SearchClientAdaptor, DataWriter, DataSearcher
 
         foreach ($filters as $filterArray) {
             foreach ($filterArray as $key => $value) {
-                if (preg_match('/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2})?$/i', $value)) {
+                if (!is_array($value) && preg_match('/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2})?$/i', $value)) {
                     $value = strtotime($value);
                 }
                 $hasModifier = strpos($key, ':') !== false;
@@ -220,11 +220,13 @@ class AlgoliaClient implements SearchClientAdaptor, DataWriter, DataSearcher
             foreach ($forFacets as $filterArray) {
                 foreach ($filterArray as $key => $value) {
                     if (is_array($value)) {
-                        $query['facetFilters'][] = array_map(
-                            function ($item) use ($key) {
-                                return "{$key}:{$item}";
-                            },
-                            $value
+                        $query['facetFilters'][] = array_values(
+                            array_map(
+                                function ($item) use ($key) {
+                                    return "{$key}:{$item}";
+                                },
+                                $value
+                            )
                         );
                     } else {
                         $query['facetFilters'][] = ["{$key}:{$value}"];
